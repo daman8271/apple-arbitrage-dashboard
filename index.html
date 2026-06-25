@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Price Arbitrage Dashboard - June 25, 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border: 1px solid #e94560;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(233,69,96,0.1) 0%, transparent 50%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .header h1 { font-size: 2.2em; color: #fff; position: relative; }
+        .header .subtitle { color: #e94560; font-size: 1.1em; margin-top: 8px; position: relative; }
+        .header .timestamp { color: #888; font-size: 0.9em; margin-top: 4px; position: relative; }
+        
+        /* Alert Banner */
+        .alert-banner {
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-align: center;
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.8; } }
+        
+        /* Section */
+        .section {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4e;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .section h2 {
+            color: #fff;
+            font-size: 1.5em;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e94560;
+        }
+        .section h3 {
+            color: #ccc;
+            font-size: 1.2em;
+            margin: 16px 0 12px;
+        }
+        
+        /* Priority Cards */
+        .priority-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .priority-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .priority-card:hover { transform: translateY(-2px); }
+        .priority-card.tier-1 { border-left-color: #e94560; }
+        .priority-card.tier-2 { border-left-color: #f5a623; }
+        .priority-card.tier-3 { border-left-color: #4ecdc4; }
+        .priority-card .rank {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #e94560;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+        .priority-card .product-name { font-size: 1.1em; font-weight: 600; color: #fff; margin-bottom: 8px; }
+        .priority-card .price-row { display: flex; justify-content: space-between; margin: 4px 0; }
+        .priority-card .price-label { color: #888; }
+        .priority-card .price-value { color: #4ecdc4; font-weight: 600; }
+        .priority-card .profit { color: #00ff88; font-size: 1.2em; font-weight: 700; margin-top: 8px; }
+        .priority-card .roi { color: #f5a623; font-weight: 600; }
+        .priority-card .availability { color: #e94560; font-size: 0.85em; margin-top: 4px; }
+        
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9em;
+        }
+        .data-table th {
+            background: #0f3460;
+            color: #fff;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e94560;
+        }
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #2a2a4e;
+        }
+        .data-table tr:hover { background: #16213e; }
+        .data-table .profit-cell { color: #00ff88; font-weight: 600; }
+        .data-table .roi-cell { color: #f5a623; font-weight: 600; }
+        .data-table .old-price { color: #888; text-decoration: line-through; }
+        .data-table .new-price { color: #e94560; font-weight: 600; }
+        .data-table .buy-price { color: #4ecdc4; font-weight: 600; }
+        
+        /* Scenario Cards */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        .scenario-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2a4e;
+        }
+        .scenario-card h4 { color: #f5a623; margin-bottom: 12px; font-size: 1.1em; }
+        .scenario-card .metric { display: flex; justify-content: space-between; margin: 6px 0; }
+        .scenario-card .metric-label { color: #888; }
+        .scenario-card .metric-value { color: #fff; font-weight: 600; }
+        .scenario-card .total-profit { color: #00ff88; font-size: 1.4em; font-weight: 700; margin-top: 12px; text-align: center; }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #e94560, #f5a623, #4ecdc4);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: #16213e;
+            border-radius: 8px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 16px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e94560;
+        }
+        .timeline-item .time { color: #e94560; font-weight: 600; font-size: 0.9em; }
+        .timeline-item .event { color: #fff; margin-top: 4px; }
+        
+        /* Recommendation Box */
+        .recommendation {
+            background: linear-gradient(135deg, #0f3460, #1a1a2e);
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 16px;
+        }
+        .recommendation h3 { color: #00ff88; margin-bottom: 12px; }
+        .recommendation ol { padding-left: 20px; }
+        .recommendation li { margin: 8px 0; color: #e0e0e0; }
+        .recommendation .highlight { color: #f5a623; font-weight: 600; }
+        
+        /* Source Tags */
+        .sources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .source-tag {
+            background: #2a2a4e;
+            color: #888;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.8em;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-item {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-item .stat-value { font-size: 1.8em; font-weight: 700; color: #00ff88; }
+        .stat-item .stat-label { color: #888; font-size: 0.85em; margin-top: 4px; }
+        
+        /* Tier Labels */
+        .tier-label {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .tier-label.t1 { background: rgba(233,69,96,0.2); color: #e94560; }
+        .tier-label.t2 { background: rgba(245,166,35,0.2); color: #f5a623; }
+        .tier-label.t3 { background: rgba(78,205,196,0.2); color: #4ecdc4; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .priority-grid { grid-template-columns: 1fr; }
+            .scenario-grid { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .header h1 { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Apple Price Arbitrage Dashboard</h1>
+            <div class="subtitle">LIVE OPPORTUNITY WINDOW - Act Before Amazon & Flipkart Update Prices</div>
+            <div class="timestamp">Data collected: June 25, 2026 | Sources: Apple.in, Amazon.in, Flipkart, X/Twitter, IndiaMART</div>
+        </div>
+        
+        <!-- Alert -->
+        <div class="alert-banner">
+            CONFIRMED: Apple raised prices TODAY. Amazon & Flipkart have NOT updated yet. Window closing in 24-48 hours.
+        </div>
+        
+        <!-- Key Stats -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value">₹74,910</div>
+                <div class="stat-label">Max Profit Per Unit</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">88.8%</div>
+                <div class="stat-label">Best ROI (Apple TV 4K)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">18+</div>
+                <div class="stat-label">Products with Arbitrage</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">₹7.49L</div>
+                <div class="stat-label">Max Profit (10 units)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">24-48h</div>
+                <div class="stat-label">Estimated Window</div>
+            </div>
+        </div>
+        
+        <!-- TIER 1: BUY IMMEDIATELY -->
+        <div class="section">
+            <h2>TIER 1: BUY IMMEDIATELY (Highest Absolute Profit)</h2>
+            <span class="tier-label t1">CRITICAL PRIORITY - Maximum ₹ per unit</span>
+            <div class="priority-grid">
+                <div class="priority-card tier-1">
+                    <div class="rank">1</div>
+                    <div class="product-name">MacBook Pro 14" M5 (24GB/1TB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now (Amazon/FK):</span><span class="price-value">₹1,64,990</span></div>
+                    <div class="price-row"><span class="price-label">New Apple.in Price:</span><span class="new-price">₹2,39,900</span></div>
+                    <div class="profit">Profit: ₹74,910/unit</div>
+                    <div class="roi">ROI: 45.4%</div>
+                    <div class="availability">Stock: Available on Amazon & Flipkart</div>
+                </div>
+                <div class="priority-card tier-1">
+                    <div class="rank">2</div>
+                    <div class="product-name">MacBook Pro 16" M5 Pro (24GB/1TB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now (Amazon/FK):</span><span class="price-value">₹2,94,990</span></div>
+                    <div class="price-row"><span class="price-label">New Apple.in Price:</span><span class="new-price">₹3,49,900</span></div>
+                    <div class="profit">Profit: ₹54,910/unit</div>
+                    <div class="roi">ROI: 18.6%</div>
+                    <div class="availability">Stock: Available</div>
+                </div>
+                <div class="priority-card tier-1">
+                    <div class="rank">3</div>
+                    <div class="product-name">MacBook Pro 14" M5 Pro (24GB/1TB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now (Amazon/FK):</span><span class="price-value">₹2,45,990</span></div>
+                    <div class="price-row"><span class="price-label">New Apple.in Price:</span><span class="new-price">₹2,99,900</span></div>
+                    <div class="profit">Profit: ₹53,910/unit</div>
+                    <div class="roi">ROI: 21.9%</div>
+                    <div class="availability">Stock: Available</div>
+                </div>
+                <div class="priority-card tier-1">
+                    <div class="rank">4</div>
+                    <div class="product-name">Mac Mini M4 Pro (24GB/512GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now (Amazon/FK):</span><span class="price-value">₹1,49,900</span></div>
+                    <div class="price-row"><span class="price-label">New Apple.in Price:</span><span class="new-price">₹1,99,900</span></div>
+                    <div class="profit">Profit: ₹50,000/unit</div>
+                    <div class="roi">ROI: 33.4%</div>
+                    <div class="availability">Stock: LIMITED - Few left</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TIER 2: HIGH PRIORITY -->
+        <div class="section">
+            <h2>TIER 2: HIGH PRIORITY (Best ROI + Volume Play)</h2>
+            <span class="tier-label t2">STRONG BUY - Best balance of profit & accessibility</span>
+            <div class="priority-grid">
+                <div class="priority-card tier-2">
+                    <div class="rank">5</div>
+                    <div class="product-name">MacBook Air M5 15" (16GB/512GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹1,31,990</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹1,79,900</span></div>
+                    <div class="profit">Profit: ₹47,910/unit</div>
+                    <div class="roi">ROI: 36.3%</div>
+                </div>
+                <div class="priority-card tier-2">
+                    <div class="rank">6</div>
+                    <div class="product-name">iPad Pro M5 11" (256GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹97,990</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹1,39,900</span></div>
+                    <div class="profit">Profit: ₹41,910/unit</div>
+                    <div class="roi">ROI: 42.8%</div>
+                </div>
+                <div class="priority-card tier-2">
+                    <div class="rank">7</div>
+                    <div class="product-name">MacBook Air M5 13" (16GB/512GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹1,08,290</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹1,49,900</span></div>
+                    <div class="profit">Profit: ₹41,610/unit</div>
+                    <div class="roi">ROI: 38.4%</div>
+                </div>
+                <div class="priority-card tier-2">
+                    <div class="rank">8</div>
+                    <div class="product-name">iPad Air M4 13" (128GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹84,900</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹1,19,900</span></div>
+                    <div class="profit">Profit: ₹35,000/unit</div>
+                    <div class="roi">ROI: 41.2%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TIER 3: SMART BUYS -->
+        <div class="section">
+            <h2>TIER 3: SMART BUYS (Lower Capital, High ROI%)</h2>
+            <span class="tier-label t3">GOOD OPPORTUNITY - Lower investment, strong returns</span>
+            <div class="priority-grid">
+                <div class="priority-card tier-3">
+                    <div class="rank">9</div>
+                    <div class="product-name">Apple TV 4K (128GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹16,900</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹31,900</span></div>
+                    <div class="profit">Profit: ₹15,000/unit</div>
+                    <div class="roi">ROI: 88.8% (BEST %)</div>
+                </div>
+                <div class="priority-card tier-3">
+                    <div class="rank">10</div>
+                    <div class="product-name">Apple TV 4K (64GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹14,900</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹25,900</span></div>
+                    <div class="profit">Profit: ₹11,000/unit</div>
+                    <div class="roi">ROI: 73.8%</div>
+                </div>
+                <div class="priority-card tier-3">
+                    <div class="rank">11</div>
+                    <div class="product-name">iPad Air M4 11" (128GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹64,900</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹89,900</span></div>
+                    <div class="profit">Profit: ₹25,000/unit</div>
+                    <div class="roi">ROI: 38.5%</div>
+                </div>
+                <div class="priority-card tier-3">
+                    <div class="rank">12</div>
+                    <div class="product-name">Mac Mini M4 (16GB/512GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹59,900</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹82,900</span></div>
+                    <div class="profit">Profit: ₹23,000/unit</div>
+                    <div class="roi">ROI: 38.4%</div>
+                </div>
+                <div class="priority-card tier-3">
+                    <div class="rank">13</div>
+                    <div class="product-name">iPad mini (128GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹49,900</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹69,900</span></div>
+                    <div class="profit">Profit: ₹20,000/unit</div>
+                    <div class="roi">ROI: 40.1%</div>
+                </div>
+                <div class="priority-card tier-3">
+                    <div class="rank">14</div>
+                    <div class="product-name">iPad 11th Gen (128GB)</div>
+                    <div class="price-row"><span class="price-label">Buy Now:</span><span class="price-value">₹34,400</span></div>
+                    <div class="price-row"><span class="price-label">New Price:</span><span class="new-price">₹49,900</span></div>
+                    <div class="profit">Profit: ₹15,500/unit</div>
+                    <div class="roi">ROI: 45.1%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- COMPLETE COMPARISON TABLE -->
+        <div class="section">
+            <h2>Complete SKU Comparison: All Platforms</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Old Apple.in</th>
+                            <th>New Apple.in</th>
+                            <th>Amazon India</th>
+                            <th>Flipkart</th>
+                            <th>Profit/Unit</th>
+                            <th>ROI %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>MacBook Pro 14" M5 (24/1TB)</strong></td>
+                            <td class="old-price">₹1,69,900</td>
+                            <td class="new-price">₹2,39,900</td>
+                            <td class="buy-price">₹1,64,990</td>
+                            <td class="buy-price">₹1,64,990</td>
+                            <td class="profit-cell">₹74,910</td>
+                            <td class="roi-cell">45.4%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MacBook Pro 16" M5 Pro (24/1TB)</strong></td>
+                            <td class="old-price">₹2,99,900</td>
+                            <td class="new-price">₹3,49,900</td>
+                            <td class="buy-price">₹2,94,990</td>
+                            <td class="buy-price">₹2,94,990</td>
+                            <td class="profit-cell">₹54,910</td>
+                            <td class="roi-cell">18.6%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MacBook Pro 14" M5 Pro (24/1TB)</strong></td>
+                            <td class="old-price">₹2,49,900</td>
+                            <td class="new-price">₹2,99,900</td>
+                            <td class="buy-price">₹2,45,990</td>
+                            <td class="buy-price">₹2,45,990</td>
+                            <td class="profit-cell">₹53,910</td>
+                            <td class="roi-cell">21.9%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mac Mini M4 Pro (24/512)</strong></td>
+                            <td class="old-price">₹1,49,900</td>
+                            <td class="new-price">₹1,99,900</td>
+                            <td class="buy-price">₹1,49,900</td>
+                            <td class="buy-price">₹1,49,900</td>
+                            <td class="profit-cell">₹50,000</td>
+                            <td class="roi-cell">33.4%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MacBook Air M5 15" (16/512)</strong></td>
+                            <td class="old-price">₹1,39,900</td>
+                            <td class="new-price">₹1,79,900</td>
+                            <td class="buy-price">₹1,31,990</td>
+                            <td class="buy-price">₹1,31,990</td>
+                            <td class="profit-cell">₹47,910</td>
+                            <td class="roi-cell">36.3%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MacBook Air M5 15" (24/1TB)</strong></td>
+                            <td class="old-price">₹1,84,900</td>
+                            <td class="new-price">₹2,24,900</td>
+                            <td class="buy-price">₹1,76,990</td>
+                            <td class="buy-price">₹1,76,990</td>
+                            <td class="profit-cell">₹47,910</td>
+                            <td class="roi-cell">27.1%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iPad Pro M5 11" (256GB)</strong></td>
+                            <td class="old-price">₹99,900</td>
+                            <td class="new-price">₹1,39,900</td>
+                            <td class="buy-price">₹97,990</td>
+                            <td class="buy-price">₹99,900</td>
+                            <td class="profit-cell">₹41,910</td>
+                            <td class="roi-cell">42.8%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MacBook Air M5 13" (16/512)</strong></td>
+                            <td class="old-price">₹1,19,900</td>
+                            <td class="new-price">₹1,49,900</td>
+                            <td class="buy-price">₹1,08,290</td>
+                            <td class="buy-price">₹1,08,290</td>
+                            <td class="profit-cell">₹41,610</td>
+                            <td class="roi-cell">38.4%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iPad Pro M5 11" (512GB)</strong></td>
+                            <td class="old-price">₹1,19,900</td>
+                            <td class="new-price">₹1,59,900</td>
+                            <td class="buy-price">₹1,19,900</td>
+                            <td class="buy-price">₹1,19,900</td>
+                            <td class="profit-cell">₹40,000</td>
+                            <td class="roi-cell">33.4%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iPad Air M4 13" (128GB)</strong></td>
+                            <td class="old-price">₹84,900</td>
+                            <td class="new-price">₹1,19,900</td>
+                            <td class="buy-price">₹84,900</td>
+                            <td class="buy-price">₹84,900</td>
+                            <td class="profit-cell">₹35,000</td>
+                            <td class="roi-cell">41.2%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MacBook Air M5 13" (24/1TB)</strong></td>
+                            <td class="old-price">₹1,59,900</td>
+                            <td class="new-price">₹1,84,900</td>
+                            <td class="buy-price">₹1,52,990</td>
+                            <td class="buy-price">₹1,52,990</td>
+                            <td class="profit-cell">₹31,910</td>
+                            <td class="roi-cell">20.9%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iPad Air M4 11" (128GB)</strong></td>
+                            <td class="old-price">₹64,900</td>
+                            <td class="new-price">₹89,900</td>
+                            <td class="buy-price">₹64,900</td>
+                            <td class="buy-price">₹64,900</td>
+                            <td class="profit-cell">₹25,000</td>
+                            <td class="roi-cell">38.5%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iPad Air M4 11" (256GB)</strong></td>
+                            <td class="old-price">₹74,900</td>
+                            <td class="new-price">₹99,900</td>
+                            <td class="buy-price">₹74,900</td>
+                            <td class="buy-price">₹74,900</td>
+                            <td class="profit-cell">₹25,000</td>
+                            <td class="roi-cell">33.4%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mac Mini M4 (16/512)</strong></td>
+                            <td class="old-price">₹59,900</td>
+                            <td class="new-price">₹82,900</td>
+                            <td class="buy-price">₹59,900</td>
+                            <td class="buy-price">₹59,900</td>
+                            <td class="profit-cell">₹23,000</td>
+                            <td class="roi-cell">38.4%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iPad mini (128GB)</strong></td>
+                            <td class="old-price">₹49,900</td>
+                            <td class="new-price">₹69,900</td>
+                            <td class="buy-price">₹49,900</td>
+                            <td class="buy-price">₹49,900</td>
+                            <td class="profit-cell">₹20,000</td>
+                            <td class="roi-cell">40.1%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MacBook Neo (16/256)</strong></td>
+                            <td class="old-price">₹69,900</td>
+                            <td class="new-price">₹79,900</td>
+                            <td class="buy-price">₹63,000</td>
+                            <td class="buy-price">₹63,000</td>
+                            <td class="profit-cell">₹16,900</td>
+                            <td class="roi-cell">26.8%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iPad 11th Gen (128GB)</strong></td>
+                            <td class="old-price">₹34,900</td>
+                            <td class="new-price">₹49,900</td>
+                            <td class="buy-price">₹34,400</td>
+                            <td class="buy-price">₹34,900</td>
+                            <td class="profit-cell">₹15,500</td>
+                            <td class="roi-cell">45.1%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Apple TV 4K (128GB)</strong></td>
+                            <td class="old-price">₹16,900</td>
+                            <td class="new-price">₹31,900</td>
+                            <td class="buy-price">₹16,900</td>
+                            <td class="buy-price">₹16,900</td>
+                            <td class="profit-cell">₹15,000</td>
+                            <td class="roi-cell">88.8%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>HomePod</strong></td>
+                            <td class="old-price">₹32,900</td>
+                            <td class="new-price">₹44,900</td>
+                            <td class="buy-price">₹32,900</td>
+                            <td class="buy-price">₹32,900</td>
+                            <td class="profit-cell">₹12,000</td>
+                            <td class="roi-cell">36.5%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Apple TV 4K (64GB)</strong></td>
+                            <td class="old-price">₹14,900</td>
+                            <td class="new-price">₹25,900</td>
+                            <td class="buy-price">₹14,900</td>
+                            <td class="buy-price">₹14,900</td>
+                            <td class="profit-cell">₹11,000</td>
+                            <td class="roi-cell">73.8%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- INVESTMENT SCENARIOS -->
+        <div class="section">
+            <h2>Investment Scenarios (10-12 Units Bulk Buy)</h2>
+            <div class="scenario-grid">
+                <div class="scenario-card">
+                    <h4>Scenario A: Maximum Profit</h4>
+                    <div class="metric"><span class="metric-label">Product:</span><span class="metric-value">MacBook Pro 14" M5</span></div>
+                    <div class="metric"><span class="metric-label">Units:</span><span class="metric-value">10</span></div>
+                    <div class="metric"><span class="metric-label">Investment:</span><span class="metric-value">₹16,49,900</span></div>
+                    <div class="metric"><span class="metric-label">Sell Value:</span><span class="metric-value">₹23,99,000</span></div>
+                    <div class="total-profit">PROFIT: ₹7,49,100</div>
+                </div>
+                <div class="scenario-card">
+                    <h4>Scenario B: Best ROI %</h4>
+                    <div class="metric"><span class="metric-label">Product:</span><span class="metric-value">Apple TV 4K (128GB)</span></div>
+                    <div class="metric"><span class="metric-label">Units:</span><span class="metric-value">12</span></div>
+                    <div class="metric"><span class="metric-label">Investment:</span><span class="metric-value">₹2,02,800</span></div>
+                    <div class="metric"><span class="metric-label">Sell Value:</span><span class="metric-value">₹3,82,800</span></div>
+                    <div class="total-profit">PROFIT: ₹1,80,000 (88.8%)</div>
+                </div>
+                <div class="scenario-card">
+                    <h4>Scenario C: Balanced Play</h4>
+                    <div class="metric"><span class="metric-label">Product:</span><span class="metric-value">MacBook Air M5 13" (16/512)</span></div>
+                    <div class="metric"><span class="metric-label">Units:</span><span class="metric-value">12</span></div>
+                    <div class="metric"><span class="metric-label">Investment:</span><span class="metric-value">₹12,99,480</span></div>
+                    <div class="metric"><span class="metric-label">Sell Value:</span><span class="metric-value">₹17,98,800</span></div>
+                    <div class="total-profit">PROFIT: ₹4,99,320</div>
+                </div>
+                <div class="scenario-card">
+                    <h4>Scenario D: Low Capital Entry</h4>
+                    <div class="metric"><span class="metric-label">Product:</span><span class="metric-value">iPad 11th Gen (128GB)</span></div>
+                    <div class="metric"><span class="metric-label">Units:</span><span class="metric-value">12</span></div>
+                    <div class="metric"><span class="metric-label">Investment:</span><span class="metric-value">₹4,12,800</span></div>
+                    <div class="metric"><span class="metric-label">Sell Value:</span><span class="metric-value">₹5,98,800</span></div>
+                    <div class="total-profit">PROFIT: ₹1,86,000 (45.1%)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PREDICTION TIMELINE -->
+        <div class="section">
+            <h2>Prediction: What Happens If You Don't Act NOW</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="time">Within 12-24 Hours</div>
+                    <div class="event">Amazon India and Flipkart update product listings to match new Apple.in MRP. The arbitrage window CLOSES for online retail.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Within 24-48 Hours</div>
+                    <div class="event">All Apple Authorized Resellers (Imagine, Unicorn, iStore) update to new pricing. Physical store arbitrage closes.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Within 48-72 Hours</div>
+                    <div class="event">Third-party sellers on Amazon/Flipkart raise prices ABOVE new MRP due to demand surge and supply panic. Prices may go 5-10% ABOVE new Apple.in pricing.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Within 1 Week</div>
+                    <div class="event">IndiaMART, wholesale channels, and B2B distributors (Ingram Micro, Redington) fully adjust. Mac Mini M4 256GB becomes a premium collector item (DISCONTINUED).</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Within 2-4 Weeks</div>
+                    <div class="event">Market stabilizes at new price points. Products bought today at old prices can be sold at 20-45% markup with zero risk. Demand remains high as consumers accept new reality.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RESELLER PRICING -->
+        <div class="section">
+            <h2>Reseller & Wholesale Channel Pricing</h2>
+            <h3>Current Wholesale/Reseller Prices (Pre-Update)</h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Product</th>
+                            <th>Current Price</th>
+                            <th>New Apple.in</th>
+                            <th>Gap</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>IndiaMART Dealers</td>
+                            <td>Mac Mini M4 (16/256) DISCONTINUED</td>
+                            <td class="buy-price">₹53,900</td>
+                            <td class="new-price">DISCONTINUED</td>
+                            <td class="profit-cell">INFINITE VALUE</td>
+                        </tr>
+                        <tr>
+                            <td>iMaStudent (Education)</td>
+                            <td>Mac Mini M4 (16/512)</td>
+                            <td class="buy-price">₹49,990</td>
+                            <td class="new-price">₹82,900</td>
+                            <td class="profit-cell">₹32,910</td>
+                        </tr>
+                        <tr>
+                            <td>Facebook Resellers</td>
+                            <td>MacBook Air M5 13" (16/512)</td>
+                            <td class="buy-price">₹1,05,000</td>
+                            <td class="new-price">₹1,49,900</td>
+                            <td class="profit-cell">₹44,900</td>
+                        </tr>
+                        <tr>
+                            <td>Instagram Resellers</td>
+                            <td>MacBook Neo (16/256)</td>
+                            <td class="buy-price">₹55,000-58,000</td>
+                            <td class="new-price">₹79,900</td>
+                            <td class="profit-cell">₹21,900-24,900</td>
+                        </tr>
+                        <tr>
+                            <td>B2B Distributors (est.)</td>
+                            <td>MacBook Pro 14" M5 (24/1TB)</td>
+                            <td class="buy-price">₹1,55,000-1,60,000</td>
+                            <td class="new-price">₹2,39,900</td>
+                            <td class="profit-cell">₹79,900-84,900</td>
+                        </tr>
+                        <tr>
+                            <td>B2B Distributors (est.)</td>
+                            <td>iPad Pro M5 11" (256GB)</td>
+                            <td class="buy-price">₹92,000-95,000</td>
+                            <td class="new-price">₹1,39,900</td>
+                            <td class="profit-cell">₹44,900-47,900</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- FINAL RECOMMENDATION -->
+        <div class="section">
+            <h2>My Recommendation: What To Do RIGHT NOW</h2>
+            <div class="recommendation">
+                <h3>IMMEDIATE ACTION PLAN (Next 2-4 Hours)</h3>
+                <ol>
+                    <li><span class="highlight">FIRST PRIORITY:</span> Buy 5-6x MacBook Air M5 13" (16/512GB) at ₹1,08,290 from Amazon India. Highest liquidity, easiest to resell, ₹41,610 profit each. Total investment: ~₹6.5L, Profit: ~₹2.5L</li>
+                    <li><span class="highlight">SECOND PRIORITY:</span> Buy 3-4x iPad Pro M5 11" (256GB) at ₹97,990 from Amazon. 42.8% ROI, strong demand product. Investment: ~₹3L, Profit: ~₹1.26L</li>
+                    <li><span class="highlight">THIRD PRIORITY:</span> Buy 2-3x MacBook Pro 14" M5 (24/1TB) at ₹1,64,990. Highest absolute profit at ₹74,910 each. Investment: ~₹5L, Profit: ~₹2.25L</li>
+                    <li><span class="highlight">BONUS PLAY:</span> Buy 10-12x Apple TV 4K (128GB) at ₹16,900. Low capital (₹2L), 88.8% ROI, easy to store and ship.</li>
+                </ol>
+                <p style="margin-top: 16px; color: #e94560; font-weight: 600;">
+                    TOTAL SUGGESTED INVESTMENT: ₹16-17 Lakhs | EXPECTED PROFIT: ₹6-8 Lakhs | TIMEFRAME: Sell within 1-2 weeks
+                </p>
+            </div>
+            <div class="recommendation" style="border-color: #f5a623; margin-top: 16px;">
+                <h3 style="color: #f5a623;">RISK FACTORS TO CONSIDER</h3>
+                <ol>
+                    <li>Amazon/Flipkart may limit bulk purchases (use multiple accounts or buy from different sellers)</li>
+                    <li>Return window: Amazon has 7-day return policy for electronics - gives you safety net</li>
+                    <li>GST implications: If reselling, you may need GST registration for amounts above ₹20L/year</li>
+                    <li>Storage: Ensure sealed boxes remain unopened to maintain full resale value</li>
+                    <li>Market risk: Extremely low - Apple has NEVER reversed a price increase</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- MacBook Pro 16" Deep Dive -->
+        <div class="section">
+            <h2>DEEP DIVE: MacBook Pro 16" - All Chips & Configurations</h2>
+            <p style="color: #f5a623; margin-bottom: 16px;">The MacBook Pro 16" is the highest-value arbitrage target due to large absolute profit per unit. Here's every configuration available:</p>
+            
+            <h3>Chip Architecture Comparison</h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>M5 Pro (15C/16G)</th>
+                            <th>M5 Pro (18C/20G)</th>
+                            <th>M5 Max (18C/32G)</th>
+                            <th>M5 Max (18C/40G)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CPU Cores</td>
+                            <td>15 (5 super + 10 perf)</td>
+                            <td>18 (6 super + 12 perf)</td>
+                            <td>18 (6 super + 12 perf)</td>
+                            <td>18 (6 super + 12 perf)</td>
+                        </tr>
+                        <tr>
+                            <td>GPU Cores</td>
+                            <td>16</td>
+                            <td>20</td>
+                            <td>32</td>
+                            <td>40</td>
+                        </tr>
+                        <tr>
+                            <td>Memory Bandwidth</td>
+                            <td>307 GB/s</td>
+                            <td>307 GB/s</td>
+                            <td>460 GB/s</td>
+                            <td>614 GB/s</td>
+                        </tr>
+                        <tr>
+                            <td>Max Unified Memory</td>
+                            <td>64GB</td>
+                            <td>64GB</td>
+                            <td>128GB</td>
+                            <td>128GB</td>
+                        </tr>
+                        <tr>
+                            <td>Video Encode Engines</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>ProRes Engines</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>External Displays</td>
+                            <td>Up to 3</td>
+                            <td>Up to 3</td>
+                            <td>Up to 4</td>
+                            <td>Up to 4</td>
+                        </tr>
+                        <tr>
+                            <td>Thunderbolt</td>
+                            <td>5 (120 Gbps)</td>
+                            <td>5 (120 Gbps)</td>
+                            <td>5 (120 Gbps)</td>
+                            <td>5 (120 Gbps)</td>
+                        </tr>
+                        <tr>
+                            <td>Wi-Fi / Bluetooth</td>
+                            <td>7 / BT 6.0</td>
+                            <td>7 / BT 6.0</td>
+                            <td>7 / BT 6.0</td>
+                            <td>7 / BT 6.0</td>
+                        </tr>
+                        <tr>
+                            <td>Battery Life (Video)</td>
+                            <td>22 hours</td>
+                            <td>22 hours</td>
+                            <td>20 hours</td>
+                            <td>20 hours</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3 style="margin-top: 24px;">MacBook Pro 16" - All SKU Pricing & Arbitrage</h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Configuration</th>
+                            <th>Chip</th>
+                            <th>RAM</th>
+                            <th>Storage</th>
+                            <th>Amazon India NOW</th>
+                            <th>New Apple.in Price</th>
+                            <th>Profit/Unit</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>MBP 16" Space Black</strong></td>
+                            <td>M5 Pro (18C/20G)</td>
+                            <td>24GB</td>
+                            <td>1TB</td>
+                            <td class="buy-price">₹2,94,990</td>
+                            <td class="new-price">₹3,49,900</td>
+                            <td class="profit-cell">₹54,910</td>
+                            <td style="color:#00ff88;">In Stock</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MBP 16" Silver</strong></td>
+                            <td>M5 Pro (18C/20G)</td>
+                            <td>24GB</td>
+                            <td>1TB</td>
+                            <td class="buy-price">₹2,99,900</td>
+                            <td class="new-price">₹3,49,900</td>
+                            <td class="profit-cell">₹50,000</td>
+                            <td style="color:#e94560;">Only 1 left!</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MBP 16" Space Black</strong></td>
+                            <td>M5 Max (18C/32G)</td>
+                            <td>36GB</td>
+                            <td>2TB</td>
+                            <td class="buy-price">₹4,21,990</td>
+                            <td class="new-price">₹4,99,900</td>
+                            <td class="profit-cell">₹77,910</td>
+                            <td style="color:#00ff88;">In Stock</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MBP 16" Space Black</strong></td>
+                            <td>M5 Max (18C/40G)</td>
+                            <td>48GB</td>
+                            <td>2TB</td>
+                            <td class="buy-price">₹4,99,900</td>
+                            <td class="new-price">₹5,69,900</td>
+                            <td class="profit-cell">₹70,000</td>
+                            <td style="color:#00ff88;">In Stock</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3 style="margin-top: 24px;">MacBook Pro 16" - Best Arbitrage Pick</h3>
+            <div class="recommendation" style="border-color: #e94560;">
+                <h3 style="color: #e94560;">TOP PICK: M5 Max (32-core GPU) 36GB/2TB at ₹4,21,990</h3>
+                <p style="margin: 8px 0; color: #e0e0e0;">This is the SWEET SPOT for MacBook Pro 16" arbitrage:</p>
+                <ol>
+                    <li><span class="highlight">Profit: ₹77,910 per unit</span> - highest absolute gain in the 16" lineup</li>
+                    <li><span class="highlight">ROI: 18.5%</span> - solid return on a premium product</li>
+                    <li><span class="highlight">Target buyers:</span> Video editors, 3D artists, VFX professionals, ML engineers</li>
+                    <li><span class="highlight">Resale ease:</span> HIGH - professionals NEED this chip for heavy workflows</li>
+                    <li><span class="highlight">If buying 3 units:</span> Investment ₹12,65,970 → Sell at ₹14,99,700 → Profit ₹2,33,730</li>
+                </ol>
+            </div>
+            
+            <h3 style="margin-top: 24px;">Who Buys MacBook Pro 16" (Resale Market)</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 12px;">
+                <div style="background: #16213e; padding: 16px; border-radius: 8px;">
+                    <div style="color: #4ecdc4; font-weight: 600; margin-bottom: 8px;">M5 Pro (18C/20G)</div>
+                    <div style="color: #888; font-size: 0.9em;">Video editors, software developers, architects. HIGH demand, EASY resale. Most popular config.</div>
+                </div>
+                <div style="background: #16213e; padding: 16px; border-radius: 8px;">
+                    <div style="color: #4ecdc4; font-weight: 600; margin-bottom: 8px;">M5 Max (32C GPU)</div>
+                    <div style="color: #888; font-size: 0.9em;">3D artists, heavy video editors, color grading pros. MEDIUM-HIGH demand, BEST margin.</div>
+                </div>
+                <div style="background: #16213e; padding: 16px; border-radius: 8px;">
+                    <div style="color: #4ecdc4; font-weight: 600; margin-bottom: 8px;">M5 Max (40C GPU)</div>
+                    <div style="color: #888; font-size: 0.9em;">VFX studios, ML engineers, research labs. NICHE but buyers pay premium without negotiation.</div>
+                </div>
+                <div style="background: #16213e; padding: 16px; border-radius: 8px;">
+                    <div style="color: #4ecdc4; font-weight: 600; margin-bottom: 8px;">Resale Channels</div>
+                    <div style="color: #888; font-size: 0.9em;">OLX (sealed box premium), corporate IT depts, YouTube creators, export to Nepal/Bangladesh/Sri Lanka.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sources -->
+        <div class="section">
+            <h2>Data Sources & Verification</h2>
+            <div class="sources">
+                <span class="source-tag">Apple.in (Official Store)</span>
+                <span class="source-tag">Amazon.in (Live Prices)</span>
+                <span class="source-tag">Flipkart.com (Live Prices)</span>
+                <span class="source-tag">@MKBHD (962K views)</span>
+                <span class="source-tag">@TrakinTech (55K views)</span>
+                <span class="source-tag">@DealBeeOfficial</span>
+                <span class="source-tag">@Cartidise</span>
+                <span class="source-tag">@mrtechpedia</span>
+                <span class="source-tag">MacRumors</span>
+                <span class="source-tag">IndiaMART</span>
+                <span class="source-tag">iMaStudent</span>
+                <span class="source-tag">Reddit r/macbook</span>
+            </div>
+            <p style="margin-top: 12px; color: #888; font-size: 0.85em;">
+                All prices verified as of June 25, 2026, 2:00 PM IST. Prices may change without notice. This analysis is for informational purposes only.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
